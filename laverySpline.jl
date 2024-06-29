@@ -7,7 +7,6 @@ function laverySpline(xData,zData, intervall)
     len = length(xData)
     h(i) = xData[i+1]-xData[i]
     deltaZ(i) = (zData[i+1]-zData[i]) / h(i)
-    #b = vec(zeros(Int(len),1))#; ones(Int(len/2),1)])
     
     # HiGHS solver using JuMP
     @variable(model, b[1:len])
@@ -16,7 +15,9 @@ function laverySpline(xData,zData, intervall)
     integralDomain = range(-0.5, 0.5, integralSteps)
     sumDomain = range(1,length(xData)-1)
     @variable(model, abs[sumDomain, integralDomain]>=0) # Absolute value
+
     integralArgument(i,t) = (-1+6*t)*b[i] + (1+6*t)*b[i+1] - 12*deltaZ(i)*t
+
     @objective(model, Min, sum( sum( abs[i,t] / integralSteps 
                                 for t in integralDomain)
                                     for i in  sumDomain))
@@ -24,7 +25,7 @@ function laverySpline(xData,zData, intervall)
                                         abs[i, t] >= integralArgument(i, t))
     @constraint(model, argNeg[t in integralDomain, i in sumDomain],
                                         abs[i, t] >= -integralArgument(i, t))
-                            
+    
     optimize!(model)
     b = vec(value.(b))
 
