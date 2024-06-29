@@ -1,0 +1,59 @@
+
+using JuMP, HiGHS
+using Integrals
+model = Model(HiGHS.Optimizer)
+
+# Evaluate E given parameters recursively
+function E(x,z,b)
+    if (length(x) == 2) 
+        return 0
+    else
+    deltaZ = (z[2] - z[1]) / (x[2] - x[1])
+    domain = (-0.5, 0.5)
+    func(t, p) = abs( (-1+6*t)*b[1] + (1+6*t)*b[2] - 12*deltaZ*t )
+    p=1
+    popfirst!(x)
+    popfirst!(z)
+    popfirst!(b)
+    prob = IntegralProblem(func, domain)
+    sol = solve(prob, QuadGKJL(); reltol = 1e-3)
+    return E(x,z,b) + sol.u
+    end
+end
+
+# Calculates the Lavery Splines of xdata and zdata
+function laverySpline(xData,zData, intervall)
+    len = length(xData)
+    h(i) = xData[i+1]-xData[i]
+    deltaZ(i) = (zData[i+1]-zData[i]) / h(i)
+    b = vec(zeros(Int(len),1))#; ones(Int(len/2),1)])
+    
+    # HiGHS solver using JuMP
+    #@variable(model, b[1:len])
+    #@objective(model, Min, E(xData,zData,b))
+    #optimize!(model)
+    #b = vec(value.(b))
+
+    # E(xData,zData,b) 
+    # Use to minimize the oscillations
+    # Simulated annealing?
+    # Maybe LP-optimization
+
+    x(j) = intervall(j)
+    z(i,j) = zData[i] + b[i]*(x(j) - xData[i]) + 1/h(i) * (-(2*b[i]+b[i+1]) + 3*deltaZ(i))*(x(j)-xData[i])^2 + 1/h(i)^2 * (b[i]+b[i+1]-2*deltaZ(i))*(x(j)-xData[i])^3
+
+    # Which index?
+    #for i in 1:(length(xData)-1)
+    #    if xData[i] <= xEval && xEval <= xData[i+1]
+    #        return z(i)
+    #    end
+    #end
+    z = z(xData[1])
+    for j in intervall
+        if x(j) > xData[i+1]
+            i = i+1
+        end
+    push!(z, z(i,j))
+    end
+
+end

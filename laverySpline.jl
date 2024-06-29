@@ -1,41 +1,46 @@
 
-using JuMP
-using HiGHS
-using Integrals
-
-# Evaluate E given parameters recursively
-function E(x,z,b)
-    if (length(x) == 2) 
-        return 0
-    else
-    deltaZ = (z[2] - z[1]) / (x[2] - x[1])
-    domain = (-0.5, 0.5)
-    func(t, p) = abs( (-1+6*t)*b[1] + (1+6*t)*b[2] - 12*deltaZ*t )
-    p=1
-    popfirst!(x)
-    popfirst!(z)
-    popfirst!(b)
-    prob = IntegralProblem(func, domain)
-    sol = solve(prob, QuadGKJL(); reltol = 1e-3)
-    return E(x,z,b) + sol.u
-    end
-end
+using JuMP, HiGHS
+model = Model(HiGHS.Optimizer)
 
 # Calculates the Lavery Splines of xdata and zdata
-function laverySpline(xEval,xData,zData)
+function laverySpline(xData,zData, intervall)
     len = length(xData)
     h(i) = xData[i+1]-xData[i]
     deltaZ(i) = (zData[i+1]-zData[i]) / h(i)
-    b = vec([zeros(Int(len/2),1); ones(Int(len/2),1)])
+    #b = vec(zeros(Int(len),1))#; ones(Int(len/2),1)])
     
-    #E(xData,zData,b) # Use to minimize the derivative oscillations
+    # HiGHS solver using JuMP
+    @variable(model, b[1:len])
     
-    z(i) = zData[i] + b[i]*(xEval - xData[i]) + 1/h(i) * (-(2*b[i]+b[i+1]) + 3*deltaZ(i))*(xEval-xData[i])^2 + 1/h(i)^2 * (b[i]+b[i+1]-2*deltaZ(i))*(xEval-xData[i])^3
+    integralSteps = 3000
+    integralDomain = range(-0.5, 0.5, integralSteps)
+    sumDomain = range(1,length(xData)-1)
+    @variable(model, abs[sumDomain, integralDomain]>=0) # Absolute value
+    integralArgument(i,t) = (-1+6*t)*b[i] + (1+6*t)*b[i+1] - 12*deltaZ(i)*t
+    @objective(model, Min, sum( sum( abs[i,t] / integralSteps 
+                                for t in integralDomain)
+                                    for i in  sumDomain))
+    @constraint(model, argPos[t in integralDomain, i in sumDomain],
+                                        abs[i, t] >= integralArgument(i, t))
+    @constraint(model, argNeg[t in integralDomain, i in sumDomain],
+                                        abs[i, t] >= -integralArgument(i, t))
+                            
+    optimize!(model)
+    b = vec(value.(b))
 
-    # Which index?
-    for i in 1:(length(xData)-1)
-        if xData[i] <= xEval && xEval <= xData[i+1]
-            return z(i)
+    x(j) = intervall[j]
+    zTerm(i,j) = zData[i] + b[i]*(x(j) - xData[i]) + 
+                1/h(i) * (-(2*b[i]+b[i+1]) + 3*deltaZ(i))*(x(j)-xData[i])^2 + 
+                1/h(i)^2 * (b[i]+b[i+1]-2*deltaZ(i))*(x(j)-xData[i])^3
+
+
+    z = zeros(length(intervall),1)
+    i = 1
+    for j in range(1,length(intervall))
+        if x(j) > xData[i+1]
+            i = i+1
         end
+    z[j] = zTerm(i,j)
     end
+    return z
 end
