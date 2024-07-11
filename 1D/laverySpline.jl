@@ -7,26 +7,28 @@ function laverySpline(xData,zData, intervall)
     len = length(xData)
     h(i) = xData[i+1]-xData[i]
     deltaZ(i) = (zData[i+1]-zData[i]) / h(i)
-    weight = 1/len
+    weight = 10^(-4)
     
     # HiGHS solver using JuMP
     @variable(model, b[1:len])
     bDomain = range(1,len)
-    integralSteps = Int(300)
+    integralSteps = 100
     integralDomain = range(-0.5, 0.5, integralSteps)
     sumDomain = range(1,len - 1)
     @variable(model, abs_E[sumDomain, integralDomain]>=0) # Absolute value
     @variable(model, abs_b[1:len])
     integralArgument(i,t) = (-1+6*t)*b[i] + (1+6*t)*b[i+1] - 12*deltaZ(i)*t
 
-    @objective(model, Min, sum( sum( abs_E[i,t] / integralSteps[i]
+    @objective(model, Min,  sum( sum( abs_E[i,t] / integralSteps
                                 for t in integralDomain)
                                     for i in  sumDomain) +
-                             sum( weight * abs_b[i] for i in bDomain))
+                            sum( weight * abs_b[i] for i in bDomain))
+    
     @constraint(model, argPos[t in integralDomain, i in sumDomain],
                                         abs_E[i, t] >= integralArgument(i, t) )
     @constraint(model, argNeg[t in integralDomain, i in sumDomain],
                                         abs_E[i, t] >= -integralArgument(i, t) )
+
     @constraint(model, bPos[i in bDomain], abs_b[i] >= b[i])
     @constraint(model, bNeg[i in bDomain], abs_b[i] >= -b[i])
     

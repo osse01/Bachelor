@@ -1,7 +1,7 @@
 using Plots
 include("laverySpline.jl")
 
-len=9 # number of interpolations
+len=60 # number of interpolations
 
 # Generate data with randomness in the x coordinates:
 xdata = range(0, stop=15, length=len) .+ 10/len*rand(len)
@@ -16,7 +16,7 @@ ydata = sin.(xdata)
 xs = range(xdata[1], stop=xdata[end], length=1000)
 intervall = vec(xs)
 ys = laverySpline(xdata, ydata, intervall)
-print(ys)
+#print(ys)
 
 # Create the plot
 plot(xdata, ydata, seriestype=:scatter, label="Data points")
