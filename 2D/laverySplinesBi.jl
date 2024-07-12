@@ -25,7 +25,7 @@ function biCubicSpline(xData, yData, zData, N)
         (1 - 3*xTilde(x,i)^2 + 2*xTilde(x,i) - 3*yTilde(y,j) + 3*xTilde(x,i)*yTilde(y,j)^2 + yTilde(y,j)^3)*zData[i,j] +
         deltaX(i) * (xTilde(x,i) - 2*xTilde(x,i)^2 + xTilde(x,i)^3 - 0.5 * xTilde(x,i)*yTilde(y,j)^2) * bx[i,j] + 
         deltaY(j) * (yTilde(y,j) - xTilde(x,i)*yTilde(y,j) - 1.5 * yTilde(y,j)^2 + xTilde(x,i)*yTilde(y,j)^2 + 0.5*yTilde(y,j)^3) * by[i,j] +
-        (3*xTilde(x,i)^2 - 2xTilde(x,i)^3 - 3*xTilde(x,i)*yTilde(y,j)^2 + yTilde(y,j)^3) * zData(i+1,j) +
+        (3*xTilde(x,i)^2 - 2xTilde(x,i)^3 - 3*xTilde(x,i)*yTilde(y,j)^2 + yTilde(y,j)^3) * zData[i+1,j] +
         deltaX(i) * (-xTilde(x,i)^2 + xTilde(x,i)^3 + 0.5*xTilde(x,i)* yTilde(y,j)^2) * bx[i+1,j] +
         deltaY(j) * (xTilde(x,i) * yTilde(y,j) - 0.5*yTilde(y,j)^2 - xTilde(x,i)*yTilde(y,j)^2 + 0.5*yTilde(y,j)^3) * by[i+1,j] +
         (3*yTilde(y,j)^2 - 3*xTilde(x,i) * yTilde(y,j)^2 - yTilde(y,j)^3)*zData[i,j+1] + deltaX(i)*(0.5*yTilde(y,j)^2-0.5*xTilde(x,i)*yTilde(y,j))*bx[i,j+1] +
@@ -42,7 +42,19 @@ function biCubicSpline(xData, yData, zData, N)
         (3*( 1-xTilde(x,i) )^2 - 3*yTilde(y,j) * ( 1-xTilde(x,i) )^2 - ( 1-xTilde(x,i) )^3)*zData[i,j] + deltaY(j)*(0.5*( 1-xTilde(x,i) )^2-0.5*yTilde(y,j)*( 1-xTilde(x,i) ))*by[i,j] +
         -deltaX(i) * (-( 1-xTilde(x,i) )^2 + yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3)*bx[i,j] + (3*yTilde(y,j)*( 1-xTilde(x,i) )^2 - ( 1-xTilde(x,i) )^3)*zData[i,j+1] +
         deltaY(j) * (-0.5*yTilde(y,j)*( 1-xTilde(x,i) )^2)* by[i,j+1] - deltaX(i)*(-yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3)*bx[i,j+1]
+    
+    z1(x,y,bx,by,i,j) =
+        (1 - 3*( -xTilde(x,i) )^2 + 2*( -xTilde(x,i) ) - 3*( -yTilde(y,j) ) + 3*( -xTilde(x,i) )*( -yTilde(y,j) )^2 + ( -yTilde(y,j) )^3)*zData[i+1,j+1] +
+        -deltaX(i) * (( -xTilde(x,i) ) - 2*( -xTilde(x,i) )^2 + ( -xTilde(x,i) )^3 - 0.5 * ( -xTilde(x,i) )*( -yTilde(y,j) )^2) * -bx[i+1,j+1] + 
+        -deltaY(j) * (( -yTilde(y,j) ) - ( -xTilde(x,i) )*( -yTilde(y,j) ) - 1.5 * ( -yTilde(y,j) )^2 + ( -xTilde(x,i) )*( -yTilde(y,j) )^2 + 0.5*( -yTilde(y,j) )^3) * -by[i+1,j+1] +
+        (3*( -xTilde(x,i) )^2 - 2( -xTilde(x,i) )^3 - 3*( -xTilde(x,i) )*( -yTilde(y,j) )^2 + ( -yTilde(y,j) )^3) * zData[i,j+1] +
+        -deltaX(i) * (-( -xTilde(x,i) )^2 + ( -xTilde(x,i) )^3 + 0.5*( -xTilde(x,i) )* ( -yTilde(y,j) )^2) * -bx[i,j+1] +
+        -deltaY(j) * (( -xTilde(x,i) ) * ( -yTilde(y,j) ) - 0.5*( -yTilde(y,j) )^2 - ( -xTilde(x,i) )*( -yTilde(y,j) )^2 + 0.5*( -yTilde(y,j) )^3) * -by[i,j+1] +
+        (3*( -yTilde(y,j) )^2 - 3*( -xTilde(x,i) ) * ( -yTilde(y,j) )^2 - ( -yTilde(y,j) )^3)*zData[i+1,j] + -deltaX(i)*(0.5*( -yTilde(y,j) )^2-0.5*( -xTilde(x,i) )*( -yTilde(y,j) ))*-bx[i+1,j] +
+        -deltaY(j) * (-( -yTilde(y,j) )^2 + ( -xTilde(x,i) )*( -yTilde(y,j) )^2 + 0.5*( -yTilde(y,j) )^3)*-by[i+1,j] + (3*( -xTilde(x,i) )*( -yTilde(y,j) )^2 - ( -yTilde(y,j) )^3)*zData[i,j] +
+        -deltaX(i) * (-0.5( -xTilde(x,i) )*( -yTilde(y,j) )^2)* -bx[i,j] + -deltaY(j)*(-( -xTilde(x,i) )*( -yTilde(y,j) )^2 + 0.5*( -yTilde(y,j) )^3)*-by[i,j]
 
+    
     @objective(model, Min, sum( sum( 1/(N^2)(
             sum( sum( gamma( z1( x[k,l],y[k,l],bx[k,l],by[k,l],i,j ) ) 
                     + gamma( z2( x[k,l],y[k,l],bx[k,l],by[k,l],i,j ) ) 
