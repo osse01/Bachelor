@@ -8,80 +8,80 @@ model = Model(HiGHS.Optimizer)
 function biCubicSpline(xData, yData, zData, N)
     I = length(xData)                               # length of xData
     J = length(yData)                               # length of yData
-    deltaX(i) = xData[i+1]-xData[i]                 # x-step length
-    deltaY(j) = yData[j+1]-yData[j]                 # y-step length
-    xTilde(x,i) = (x - xData[i]) / deltaX(i)        # Transforms to unit cube
+    deltaX = [xData[i+1]-xData[i] for i in 1:I-1]   # x-step length
+    deltaY = [yData[j+1]-yData[j] for j in 1:J-1]   # y-step length
+    xTilde(x,i) = (x - xData[i]) / deltaX[i]        # Transforms to unit cube
     yTilde(y,i) = (y - yData[i]) / deltaY(i)        # Transforms to unit cube
 
-    @variable(model, bx[1:len,1:len])             # dzdx(x_i,y_i)
-    @variable(model, by[1:len,1:len])             # dzdy(x_i,y_i)
+    @variable(model, bx[1:len,1:len])               # dzdx(x_i,y_i)
+    @variable(model, by[1:len,1:len])               # dzdy(x_i,y_i)
 
-    d2zdx2(i,j,k,l,xTilde, yTilde) = 1/(deltaX^2)*((-6+12*xTilde)*zData[i,j]
-                                    +deltaX*(-4+6*xTilde)*bx[i,j]
+    d2zdx2(i,j,k,l,xTilde, yTilde) = 1/(deltaX[i]^2)*((-6+12*xTilde)*zData[i,j]
+                                    +deltaX[i]*(-4+6*xTilde)*bx[i,j]
                                     +(6-12*xTilde)*zData[i+1,j]
-                                    +deltaX*(-1+6*deltaX)*bx[i+1,j])
-    d2zdxdy(i,j,k,l,xTilde, yTilde) = 1/(deltaX*deltaY)*(
+                                    +deltaX[i]*(-1+6*deltaX[i])*bx[i+1,j])
+    d2zdxdy(i,j,k,l,xTilde, yTilde) = 1/(deltaX[i]*deltaY[j])*(
                                     6*yTilde*( (zData[i,j]+zData[i+1,j+1]) - (zData[i+1,j]+zData[i,j+1]) )
-                                    +deltaX*yTilde*( (bx[i,j]+bx[i+1,j]) - (bx[i,j+1]+bx[i+1,j+1]) )
-                                    +deltaY*( (by[i1,j]-by[i,j]) + 
+                                    +deltaX[i]*yTilde*( (bx[i,j]+bx[i+1,j]) - (bx[i,j+1]+bx[i+1,j+1]) )
+                                    +deltaY[j]*( (by[i1,j]-by[i,j]) + 
                                     2*yTilde*( (by[i,j]+by[i,j+1]) - (by[i+1,j]+by[i+1,j+1]) ) ) )
-    d2zdy2(i,j,k,l,xTilde,yTilde) = 1/(deltaX^2)*((-6+6*xTilde+6*yTilde)*zData[i,j]
-                                    +deltaX*(-1+xTilde)*bx[i,j]
-                                    +deltaY*(-3+2*xTilde+3*yTilde)*by[i,j]
+    d2zdy2(i,j,k,l,xTilde,yTilde) = 1/(deltaX[i]^2)*((-6+6*xTilde+6*yTilde)*zData[i,j]
+                                    +deltaX[i]*(-1+xTilde)*bx[i,j]
+                                    +deltaY[j]*(-3+2*xTilde+3*yTilde)*by[i,j]
                                     +(-6*xTilde+6*yTilde)*zData[i+1,j]
-                                    +deltaX*(xTilde)*bx[i+1,j]
-                                    +deltaY*(-1-2*xTilde+3*yTilde)*by[i+1,j]
+                                    +deltaX[i]*(xTilde)*bx[i+1,j]
+                                    +deltaY[j]*(-1-2*xTilde+3*yTilde)*by[i+1,j]
                                     +(6-6*xTilde-6*yTilde)*zData[i,j+1]
-                                    +deltaX*(1-xTilde)*bx[i,j+1]
-                                    +deltaY*(-2+2*xTilde+3*yTilde)*by[i,j+1]
+                                    +deltaX[i]*(1-xTilde)*bx[i,j+1]
+                                    +deltaY[j]*(-2+2*xTilde+3*yTilde)*by[i,j+1]
                                     +(6*xTilde-6*yTilde)*zData[i+1,j+1]
-                                    +deltaX*(-xTilde)*bx[i+1,j+1]
-                                    +deltaY*(-2*xTilde+3*yTilde)by[i+1,j+1]
+                                    +deltaX[i]*(-xTilde)*bx[i+1,j+1]
+                                    +deltaY[j]*(-2*xTilde+3*yTilde)by[i+1,j+1]
                                     )
 
     z1(x,y,bx,by,i,j) =
         (1 - 3*xTilde(x,i)^2 + 2*xTilde(x,i) - 3*yTilde(y,j) + 3*xTilde(x,i)*yTilde(y,j)^2 + yTilde(y,j)^3)*zData[i,j] +
-        deltaX(i) * (xTilde(x,i) - 2*xTilde(x,i)^2 + xTilde(x,i)^3 - 0.5 * xTilde(x,i)*yTilde(y,j)^2) * bx[i,j] + 
-        deltaY(j) * (yTilde(y,j) - xTilde(x,i)*yTilde(y,j) - 1.5 * yTilde(y,j)^2 + xTilde(x,i)*yTilde(y,j)^2 + 0.5*yTilde(y,j)^3) * by[i,j] +
+        deltaX[i] * (xTilde(x,i) - 2*xTilde(x,i)^2 + xTilde(x,i)^3 - 0.5 * xTilde(x,i)*yTilde(y,j)^2) * bx[i,j] + 
+        deltaY[j] * (yTilde(y,j) - xTilde(x,i)*yTilde(y,j) - 1.5 * yTilde(y,j)^2 + xTilde(x,i)*yTilde(y,j)^2 + 0.5*yTilde(y,j)^3) * by[i,j] +
         (3*xTilde(x,i)^2 - 2xTilde(x,i)^3 - 3*xTilde(x,i)*yTilde(y,j)^2 + yTilde(y,j)^3) * zData[i+1,j] +
-        deltaX(i) * (-xTilde(x,i)^2 + xTilde(x,i)^3 + 0.5*xTilde(x,i)* yTilde(y,j)^2) * bx[i+1,j] +
-        deltaY(j) * (xTilde(x,i) * yTilde(y,j) - 0.5*yTilde(y,j)^2 - xTilde(x,i)*yTilde(y,j)^2 + 0.5*yTilde(y,j)^3) * by[i+1,j] +
-        (3*yTilde(y,j)^2 - 3*xTilde(x,i) * yTilde(y,j)^2 - yTilde(y,j)^3)*zData[i,j+1] + deltaX(i)*(0.5*yTilde(y,j)^2-0.5*xTilde(x,i)*yTilde(y,j))*bx[i,j+1] +
-        deltaY(j) * (-yTilde(y,j)^2 + xTilde(x,i)*yTilde(y,j)^2 + 0.5*yTilde(y,j)^3)*by[i,j+1] + (3*xTilde(x,i)*yTilde(y,j)^2 - yTilde(y,j)^3)*zData[i+1,j+1] +
-        deltaX(i) * (-0.5xTilde(x,i)*yTilde(y,j)^2)* bx[i+1,j+1] + deltaY(j)*(-xTilde(x,i)*yTilde(y,j)^2 + 0.5*yTilde(y,j)^3)*by[i+1,j+1]
+        deltaX[i] * (-xTilde(x,i)^2 + xTilde(x,i)^3 + 0.5*xTilde(x,i)* yTilde(y,j)^2) * bx[i+1,j] +
+        deltaY[j] * (xTilde(x,i) * yTilde(y,j) - 0.5*yTilde(y,j)^2 - xTilde(x,i)*yTilde(y,j)^2 + 0.5*yTilde(y,j)^3) * by[i+1,j] +
+        (3*yTilde(y,j)^2 - 3*xTilde(x,i) * yTilde(y,j)^2 - yTilde(y,j)^3)*zData[i,j+1] + deltaX[i]*(0.5*yTilde(y,j)^2-0.5*xTilde(x,i)*yTilde(y,j))*bx[i,j+1] +
+        deltaY[j] * (-yTilde(y,j)^2 + xTilde(x,i)*yTilde(y,j)^2 + 0.5*yTilde(y,j)^3)*by[i,j+1] + (3*xTilde(x,i)*yTilde(y,j)^2 - yTilde(y,j)^3)*zData[i+1,j+1] +
+        deltaX[i] * (-0.5xTilde(x,i)*yTilde(y,j)^2)* bx[i+1,j+1] + deltaY[j]*(-xTilde(x,i)*yTilde(y,j)^2 + 0.5*yTilde(y,j)^3)*by[i+1,j+1]
 
     z2(x,y,bx,by,i,j) =
         (1 - 3*yTilde(y,j)^2 + 2*yTilde(y,j) - 3*( 1-xTilde(x,i) ) + 3*yTilde(y,j)*( 1-xTilde(x,i) )^2 + ( 1-xTilde(x,i) )^3)*zData[i+1,j] +
-        deltaY(j) * (yTilde(y,j) - 2*yTilde(y,j)^2 + yTilde(y,j)^3 - 0.5 * yTilde(y,j)*( 1-xTilde(x,i) )^2) * by[i+1,j] + 
-        -deltaX(i) * (( 1-xTilde(x,i) ) - yTilde(y,j)*( 1-xTilde(x,i) ) - 1.5 * ( 1-xTilde(x,i) )^2 + yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3) * -bx[i+1,j] +
+        deltaY[j] * (yTilde(y,j) - 2*yTilde(y,j)^2 + yTilde(y,j)^3 - 0.5 * yTilde(y,j)*( 1-xTilde(x,i) )^2) * by[i+1,j] + 
+        -deltaX[i] * (( 1-xTilde(x,i) ) - yTilde(y,j)*( 1-xTilde(x,i) ) - 1.5 * ( 1-xTilde(x,i) )^2 + yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3) * -bx[i+1,j] +
         (3*yTilde(y,j)^2 - 2yTilde(y,j)^3 - 3*yTilde(y,j)*( 1-xTilde(x,i) )^2 + ( 1-xTilde(x,i) )^3) * zData[i+1,j+1] +
-        deltaY(j) * (-yTilde(y,j)^2 + yTilde(y,j)^3 + 0.5*yTilde(y,j)* ( 1-xTilde(x,i) )^2) * by[i+1,j+1] +
-        -deltaX(i) * (yTilde(y,j) * ( 1-xTilde(x,i) ) - 0.5*( 1-xTilde(x,i) )^2 - yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3) * -bx[i+1,j+1] +
-        (3*( 1-xTilde(x,i) )^2 - 3*yTilde(y,j) * ( 1-xTilde(x,i) )^2 - ( 1-xTilde(x,i) )^3)*zData[i,j] + deltaY(j)*(0.5*( 1-xTilde(x,i) )^2-0.5*yTilde(y,j)*( 1-xTilde(x,i) ))*by[i,j] +
-        -deltaX(i) * (-( 1-xTilde(x,i) )^2 + yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3)*-bx[i,j] + (3*yTilde(y,j)*( 1-xTilde(x,i) )^2 - ( 1-xTilde(x,i) )^3)*zData[i,j+1] +
-        deltaY(j) * (-0.5*yTilde(y,j)*( 1-xTilde(x,i) )^2)* by[i,j+1] - deltaX(i)*(-yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3)*-bx[i,j+1]
+        deltaY[j] * (-yTilde(y,j)^2 + yTilde(y,j)^3 + 0.5*yTilde(y,j)* ( 1-xTilde(x,i) )^2) * by[i+1,j+1] +
+        -deltaX[i] * (yTilde(y,j) * ( 1-xTilde(x,i) ) - 0.5*( 1-xTilde(x,i) )^2 - yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3) * -bx[i+1,j+1] +
+        (3*( 1-xTilde(x,i) )^2 - 3*yTilde(y,j) * ( 1-xTilde(x,i) )^2 - ( 1-xTilde(x,i) )^3)*zData[i,j] + deltaY[j]*(0.5*( 1-xTilde(x,i) )^2-0.5*yTilde(y,j)*( 1-xTilde(x,i) ))*by[i,j] +
+        -deltaX[i] * (-( 1-xTilde(x,i) )^2 + yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3)*-bx[i,j] + (3*yTilde(y,j)*( 1-xTilde(x,i) )^2 - ( 1-xTilde(x,i) )^3)*zData[i,j+1] +
+        deltaY[j] * (-0.5*yTilde(y,j)*( 1-xTilde(x,i) )^2)* by[i,j+1] - deltaX[i]*(-yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3)*-bx[i,j+1]
     
     z3(x,y,bx,by,i,j) =
         (1 - 3*( 1-xTilde(x,i) )^2 + 2*( 1-xTilde(x,i) ) - 3*( 1-yTilde(y,j) ) + 3*( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + ( 1-yTilde(y,j) )^3)*zData[i+1,j+1] +
-        -deltaX(i) * (( 1-xTilde(x,i) ) - 2*( 1-xTilde(x,i) )^2 + ( 1-xTilde(x,i) )^3 - 0.5 * ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2) * -bx[i+1,j+1] + 
-        -deltaY(j) * (( 1-yTilde(y,j) ) - ( 1-xTilde(x,i) )*( 1-yTilde(y,j) ) - 1.5 * ( 1-yTilde(y,j) )^2 + ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3) * -by[i+1,j+1] +
+        -deltaX[i] * (( 1-xTilde(x,i) ) - 2*( 1-xTilde(x,i) )^2 + ( 1-xTilde(x,i) )^3 - 0.5 * ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2) * -bx[i+1,j+1] + 
+        -deltaY[j] * (( 1-yTilde(y,j) ) - ( 1-xTilde(x,i) )*( 1-yTilde(y,j) ) - 1.5 * ( 1-yTilde(y,j) )^2 + ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3) * -by[i+1,j+1] +
         (3*( 1-xTilde(x,i) )^2 - 2( 1-xTilde(x,i) )^3 - 3*( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + ( 1-yTilde(y,j) )^3) * zData[i,j+1] +
-        -deltaX(i) * (-( 1-xTilde(x,i) )^2 + ( 1-xTilde(x,i) )^3 + 0.5*( 1-xTilde(x,i) )* ( 1-yTilde(y,j) )^2) * -bx[i,j+1] +
-        -deltaY(j) * (( 1-xTilde(x,i) ) * ( 1-yTilde(y,j) ) - 0.5*( 1-yTilde(y,j) )^2 - ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3) * -by[i,j+1] +
-        (3*( 1-yTilde(y,j) )^2 - 3*( 1-xTilde(x,i) ) * ( 1-yTilde(y,j) )^2 - ( 1-yTilde(y,j) )^3)*zData[i+1,j] + -deltaX(i)*(0.5*( 1-yTilde(y,j) )^2-0.5*( 1-xTilde(x,i) )*( 1-yTilde(y,j) ))*-bx[i+1,j] +
-        -deltaY(j) * (-( 1-yTilde(y,j) )^2 + ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3)*-by[i+1,j] + (3*( 1-xTilde(x,i) )*( -yTilde(y,j) )^2 - ( 1-yTilde(y,j) )^3)*zData[i,j] +
-        -deltaX(i) * (-0.5( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2)* -bx[i,j] + -deltaY(j)*(-( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3)*-by[i,j]
+        -deltaX[i] * (-( 1-xTilde(x,i) )^2 + ( 1-xTilde(x,i) )^3 + 0.5*( 1-xTilde(x,i) )* ( 1-yTilde(y,j) )^2) * -bx[i,j+1] +
+        -deltaY[j] * (( 1-xTilde(x,i) ) * ( 1-yTilde(y,j) ) - 0.5*( 1-yTilde(y,j) )^2 - ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3) * -by[i,j+1] +
+        (3*( 1-yTilde(y,j) )^2 - 3*( 1-xTilde(x,i) ) * ( 1-yTilde(y,j) )^2 - ( 1-yTilde(y,j) )^3)*zData[i+1,j] + -deltaX[i]*(0.5*( 1-yTilde(y,j) )^2-0.5*( 1-xTilde(x,i) )*( 1-yTilde(y,j) ))*-bx[i+1,j] +
+        -deltaY[j] * (-( 1-yTilde(y,j) )^2 + ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3)*-by[i+1,j] + (3*( 1-xTilde(x,i) )*( -yTilde(y,j) )^2 - ( 1-yTilde(y,j) )^3)*zData[i,j] +
+        -deltaX[i] * (-0.5( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2)* -bx[i,j] + -deltaY[j]*(-( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3)*-by[i,j]
 
     z4(x,y,bx,by,i,j) =
         (1 - 3*( 1-yTilde(y,j) )^2 + 2*( 1-yTilde(y,j) ) - 3*xTilde(x,i) + 3*( 1-yTilde(y,j) )*xTilde(x,i)^2 + xTilde(x,i)^3)*zData[i,j+1] +
-        -deltaY(j) * (( 1-yTilde(y,j) ) - 2*( 1-yTilde(y,j) )^2 + ( 1-yTilde(y,j) )^3 - 0.5 * ( 1-yTilde(y,j) )*xTilde(x,i)^2) * -by[i,j+1] + 
-        deltaX(i) * (xTilde(x,i) - ( 1-yTilde(y,j) )*xTilde(x,i) - 1.5 * xTilde(x,i)^2 + ( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3) * bx[i,j+1] +
+        -deltaY[j] * (( 1-yTilde(y,j) ) - 2*( 1-yTilde(y,j) )^2 + ( 1-yTilde(y,j) )^3 - 0.5 * ( 1-yTilde(y,j) )*xTilde(x,i)^2) * -by[i,j+1] + 
+        deltaX[i] * (xTilde(x,i) - ( 1-yTilde(y,j) )*xTilde(x,i) - 1.5 * xTilde(x,i)^2 + ( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3) * bx[i,j+1] +
         (3*( 1-yTilde(y,j) )^2 - 2( 1-yTilde(y,j) )^3 - 3*( 1-yTilde(y,j) )*xTilde(x,i)^2 + xTilde(x,i)^3) * zData[i,j] +
-        -deltaY(j) * (-( 1-yTilde(y,j) )^2 + ( 1-yTilde(y,j) )^3 + 0.5*( 1-yTilde(y,j) )* xTilde(x,i)^2) * -by[i,j] +
-        deltaX(i) * (( 1-yTilde(y,j) ) * xTilde(x,i) - 0.5*xTilde(x,i)^2 - ( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3) * bx[i,j] +
-        (3*xTilde(x,i)^2 - 3*( 1-yTilde(y,j) ) * xTilde(x,i)^2 - xTilde(x,i)^3)*zData[i+1,j+1] + -deltaY(j)*(0.5*xTilde(x,i)^2-0.5*( 1-yTilde(y,j) )*xTilde(x,i))*-by[i+1,j+1] +
-        deltaX(i) * (-xTilde(x,i)^2 + ( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3)*bx[i+1,j+1] + (3*( 1-yTilde(y,j) )*xTilde(x,i)^2 - xTilde(x,i)^3)*zData[i+1,j] +
-        -deltaY(j) * (-0.5( 1-yTilde(y,j) )*xTilde(x,i)^2)* -by[i+1,j] + deltaX(i)*(-( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3)*bx[i+1,j]
+        -deltaY[j] * (-( 1-yTilde(y,j) )^2 + ( 1-yTilde(y,j) )^3 + 0.5*( 1-yTilde(y,j) )* xTilde(x,i)^2) * -by[i,j] +
+        deltaX[i] * (( 1-yTilde(y,j) ) * xTilde(x,i) - 0.5*xTilde(x,i)^2 - ( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3) * bx[i,j] +
+        (3*xTilde(x,i)^2 - 3*( 1-yTilde(y,j) ) * xTilde(x,i)^2 - xTilde(x,i)^3)*zData[i+1,j+1] + -deltaY[j]*(0.5*xTilde(x,i)^2-0.5*( 1-yTilde(y,j) )*xTilde(x,i))*-by[i+1,j+1] +
+        deltaX[i] * (-xTilde(x,i)^2 + ( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3)*bx[i+1,j+1] + (3*( 1-yTilde(y,j) )*xTilde(x,i)^2 - xTilde(x,i)^3)*zData[i+1,j] +
+        -deltaY[j] * (-0.5( 1-yTilde(y,j) )*xTilde(x,i)^2)* -by[i+1,j] + deltaX[i]*(-( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3)*bx[i+1,j]
 
 
     # N = 100 # The sample size in each small square is 4N^2
