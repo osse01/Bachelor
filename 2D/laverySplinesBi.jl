@@ -17,12 +17,25 @@ function biCubicSpline(xData, yData, zData, N)
                                     +deltaX*(-4+6*xTilde)*dzdx[i,j]
                                     +(6-12*xTilde)*zData[i+1,j]
                                     +deltaX*(-1+6*deltaX)*dzdx[i+1,j])
-    d2zdxdy(i,j,k,l,xTilde, yTilde) = 1/(deltaX*deltaY)*(6*yTilde*(zData[i,j]-zData[i+1,j])
-                                    +deltaX*yTilde*dzdx[i,j]
-                                    +deltaY*(-1+2*yTilde)*dzdy[i,j]
-                                    
-                                        )
- 
+    d2zdxdy(i,j,k,l,xTilde, yTilde) = 1/(deltaX*deltaY)*(
+                                    6*yTilde*( (zData[i,j]+zData[i+1,j+1]) - (zData[i+1,j]+zData[i,j+1]) )
+                                    +deltaX*yTilde*( (dzdx[i,j]+dzdx[i+1,j]) - (dzdx[i,j+1]+dzdx[i+1,j+1]) )
+                                    +deltaY*( (dzdy[i1,j]-dzdy[i,j]) + 
+                                    2*yTilde*( (dzdy[i,j]+dzdy[i,j+1]) - (dzdy[i+1,j]+dzdy[i+1,j+1]) ) ) )
+    d2zdy2(i,j,k,l,xTilde,yTilde) = 1/(deltaX^2)*((-6+6*xTilde+6*yTilde)*zData[i,j]
+                                    +deltaX*(-1+xTilde)*dzdx[i,j]
+                                    +deltaY*(-3+2*xTilde+3*yTilde)*dzdy[i,j]
+                                    +(-6*xTilde+6*yTilde)*zData[i+1,j]
+                                    +deltaX*(xTilde)*dzdx[i+1,j]
+                                    +deltaY*(-1-2*xTilde+3*yTilde)*dzdy[i+1,j]
+                                    +(6-6*xTilde-6*yTilde)*zData[i,j+1]
+                                    +deltaX*(1-xTilde)*dzdx[i,j+1]
+                                    +deltaY*(-2+2*xTilde+3*yTilde)*dzdy[i,j+1]
+                                    +(6*xTilde-6*yTilde)*zData[i+1,j+1]
+                                    +deltaX*(-xTilde)*dzdx[i+1,j+1]
+                                    +deltaY*(-2*xTilde+3*yTilde)dzdy[i+1,j+1]
+                                    )
+
     z1(x,y,bx,by,i,j) =
         (1 - 3*xTilde(x,i)^2 + 2*xTilde(x,i) - 3*yTilde(y,j) + 3*xTilde(x,i)*yTilde(y,j)^2 + yTilde(y,j)^3)*zData[i,j] +
         deltaX(i) * (xTilde(x,i) - 2*xTilde(x,i)^2 + xTilde(x,i)^3 - 0.5 * xTilde(x,i)*yTilde(y,j)^2) * bx[i,j] + 
