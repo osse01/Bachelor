@@ -2,6 +2,9 @@
 using JuMP, HiGHS
 model = Model(HiGHS.Optimizer)
 
+# set_attribute(model, "presolve", "on")
+# set_attribute(model, "solver", "ipm") # Interior Point Method
+
 function biCubicSpline(xData, yData, zData, N)
     I = length(xData)                               # length of xData
     J = length(yData)                               # length of yData
@@ -14,26 +17,26 @@ function biCubicSpline(xData, yData, zData, N)
     @variable(model, by[1:len,1:len])             # dzdy(x_i,y_i)
 
     d2zdx2(i,j,k,l,xTilde, yTilde) = 1/(deltaX^2)*((-6+12*xTilde)*zData[i,j]
-                                    +deltaX*(-4+6*xTilde)*dzdx[i,j]
+                                    +deltaX*(-4+6*xTilde)*bx[i,j]
                                     +(6-12*xTilde)*zData[i+1,j]
-                                    +deltaX*(-1+6*deltaX)*dzdx[i+1,j])
+                                    +deltaX*(-1+6*deltaX)*bx[i+1,j])
     d2zdxdy(i,j,k,l,xTilde, yTilde) = 1/(deltaX*deltaY)*(
                                     6*yTilde*( (zData[i,j]+zData[i+1,j+1]) - (zData[i+1,j]+zData[i,j+1]) )
-                                    +deltaX*yTilde*( (dzdx[i,j]+dzdx[i+1,j]) - (dzdx[i,j+1]+dzdx[i+1,j+1]) )
-                                    +deltaY*( (dzdy[i1,j]-dzdy[i,j]) + 
-                                    2*yTilde*( (dzdy[i,j]+dzdy[i,j+1]) - (dzdy[i+1,j]+dzdy[i+1,j+1]) ) ) )
+                                    +deltaX*yTilde*( (bx[i,j]+bx[i+1,j]) - (bx[i,j+1]+bx[i+1,j+1]) )
+                                    +deltaY*( (by[i1,j]-by[i,j]) + 
+                                    2*yTilde*( (by[i,j]+by[i,j+1]) - (by[i+1,j]+by[i+1,j+1]) ) ) )
     d2zdy2(i,j,k,l,xTilde,yTilde) = 1/(deltaX^2)*((-6+6*xTilde+6*yTilde)*zData[i,j]
-                                    +deltaX*(-1+xTilde)*dzdx[i,j]
-                                    +deltaY*(-3+2*xTilde+3*yTilde)*dzdy[i,j]
+                                    +deltaX*(-1+xTilde)*bx[i,j]
+                                    +deltaY*(-3+2*xTilde+3*yTilde)*by[i,j]
                                     +(-6*xTilde+6*yTilde)*zData[i+1,j]
-                                    +deltaX*(xTilde)*dzdx[i+1,j]
-                                    +deltaY*(-1-2*xTilde+3*yTilde)*dzdy[i+1,j]
+                                    +deltaX*(xTilde)*bx[i+1,j]
+                                    +deltaY*(-1-2*xTilde+3*yTilde)*by[i+1,j]
                                     +(6-6*xTilde-6*yTilde)*zData[i,j+1]
-                                    +deltaX*(1-xTilde)*dzdx[i,j+1]
-                                    +deltaY*(-2+2*xTilde+3*yTilde)*dzdy[i,j+1]
+                                    +deltaX*(1-xTilde)*bx[i,j+1]
+                                    +deltaY*(-2+2*xTilde+3*yTilde)*by[i,j+1]
                                     +(6*xTilde-6*yTilde)*zData[i+1,j+1]
-                                    +deltaX*(-xTilde)*dzdx[i+1,j+1]
-                                    +deltaY*(-2*xTilde+3*yTilde)dzdy[i+1,j+1]
+                                    +deltaX*(-xTilde)*bx[i+1,j+1]
+                                    +deltaY*(-2*xTilde+3*yTilde)by[i+1,j+1]
                                     )
 
     z1(x,y,bx,by,i,j) =
