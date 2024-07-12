@@ -21,7 +21,7 @@ function biCubicSpline(xData, yData, zData, N)
                                     +deltaX*yTilde*dzdx[i,j]
                                     +deltaY*(-1+2*yTilde)*dzdy[i,j]
                                     
-                                        ) 
+                                        )
     z1(x,y,bx,by,i,j) =
         (1 - 3*xTilde(x,i)^2 + 2*xTilde(x,i) - 3*yTilde(y,j) + 3*xTilde(x,i)*yTilde(y,j)^2 + yTilde(y,j)^3)*zData[i,j] +
         deltaX(i) * (xTilde(x,i) - 2*xTilde(x,i)^2 + xTilde(x,i)^3 - 0.5 * xTilde(x,i)*yTilde(y,j)^2) * bx[i,j] + 
