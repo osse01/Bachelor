@@ -22,6 +22,7 @@ function biCubicSpline(xData, yData, zData, N)
                                     +deltaY*(-1+2*yTilde)*dzdy[i,j]
                                     
                                         )
+ 
     z1(x,y,bx,by,i,j) =
         (1 - 3*xTilde(x,i)^2 + 2*xTilde(x,i) - 3*yTilde(y,j) + 3*xTilde(x,i)*yTilde(y,j)^2 + yTilde(y,j)^3)*zData[i,j] +
         deltaX(i) * (xTilde(x,i) - 2*xTilde(x,i)^2 + xTilde(x,i)^3 - 0.5 * xTilde(x,i)*yTilde(y,j)^2) * bx[i,j] + 
@@ -66,19 +67,19 @@ function biCubicSpline(xData, yData, zData, N)
         deltaX(i) * (-xTilde(x,i)^2 + ( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3)*bx[i+1,j+1] + (3*( 1-yTilde(y,j) )*xTilde(x,i)^2 - xTilde(x,i)^3)*zData[i+1,j] +
         -deltaY(j) * (-0.5( 1-yTilde(y,j) )*xTilde(x,i)^2)* -by[i+1,j] + deltaX(i)*(-( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3)*bx[i+1,j]
 
-    N = 100 # The sample size in each small rectangle is 4N^2
+
+    # N = 100 # The sample size in each small square is 4N^2
     @objective(model, Min, sum( sum( 1/(N^2)(
-            sum( sum( gamma( z1( x[k,l],y[k,l],bx[k,l],by[k,l],i,j ) ) 
-                    + gamma( z2( x[k,l],y[k,l],bx[k,l],by[k,l],i,j ) ) 
-                    + gamma( z3( x[k,l],y[k,l],bx[k,l],by[k,l],i,j ) ) 
-                    + gamma( z4( x[k,l],y[k,l],bx[k,l],by[k,l],i,j ) ) 
+            sum( sum( gamma( 1,x[k],y[l],bx[k,l],by[k,l],i,j )  
+                    + gamma( 2,x[k],y[l],bx[k,l],by[k,l],i,j )  
+                    + gamma( 3,x[k],y[l],bx[k,l],by[k,l],i,j )  
+                    + gamma( 4,x[k],y[l],bx[k,l],by[k,l],i,j )  
                 for l in 1:k) for k in 1:N)
-        +   sum( sum( gamma( z1( x[k,l],y[k,l],bx[k,l],by[k,l],i,j ) )
-                    + gamma( z2( x[k,l],y[k,l],bx[k,l],by[k,l],i,j ) )
-                    + gamma( z3( x[k,l],y[k,l],bx[k,l],by[k,l],i,j ) )
-                    + gamma( z4( x[k,l],y[k,l],bx[k,l],by[k,l],i,j ) ) 
+        +   sum( sum( gamma( 1,x[k],y[l],bx[k,l],by[k,l],i,j ) 
+                    + gamma( 2,x[k],y[l],bx[k,l],by[k,l],i,j ) 
+                    + gamma( 3,x[k],y[l],bx[k,l],by[k,l],i,j ) 
+                    + gamma( 4,x[k],y[l],bx[k,l],by[k,l],i,j )  
                 for l in N:2*N-k) for k in N+1:2*N)
-        ) for j in 1:J) 
-            for i in 1:I))
+        ) for j in 1:J) for i in 1:I))
     return
 end
