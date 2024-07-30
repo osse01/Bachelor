@@ -25,7 +25,7 @@ function biCubicSpline(xData, yData, zData, N)
                                     +deltaX[i]*yTilde*( (bx[i,j]+bx[i+1,j]) - (bx[i,j+1]+bx[i+1,j+1]) )
                                     +deltaY[j]*( (by[i+1,j]-by[i,j]) + 
                                     2*yTilde*( (by[i,j]+by[i,j+1]) - (by[i+1,j]+by[i+1,j+1]) ) ) )
-    d2z1dy2_1(i,j,k,l,xTilde,yTilde) = 1/(deltaX[i]^2)*((-6+6*xTilde+6*yTilde)*zData[i,j]
+    d2z1dy2_1(i,j,k,l,xTilde,yTilde) = 1/(deltaY[j]^2)*((-6+6*xTilde+6*yTilde)*zData[i,j]
                                     +deltaX[i]*(-1+xTilde)*bx[i,j]
                                     +deltaY[j]*(-3+2*xTilde+3*yTilde)*by[i,j]
                                     +(-6*xTilde+6*yTilde)*zData[i+1,j]
@@ -70,7 +70,7 @@ function biCubicSpline(xData, yData, zData, N)
                                     -deltaX[i]*( 1-yTilde )*( (bx[i+1,j+1]+bx[i,j+1]) - (bx[i+1,j]+bx[i,j]) )
                                     -deltaY[j]*( (by[i,j+1]-by[i+1,j+1]) + 
                                     2*( 1-yTilde )*( (by[i+1,j+1]+by[i+1,j]) - (by[i,j+1]+by[i,j]) ) ) )
-    d2z1dy2_3(i,j,k,l,xTilde,yTilde) = 1/(deltaX[i]^2)*((-6+6*( 1-xTilde )+6*( 1-yTilde ))*zData[i+1,j+1]
+    d2z1dy2_3(i,j,k,l,xTilde,yTilde) = 1/(deltaY[i]^2)*((-6+6*( 1-xTilde )+6*( 1-yTilde ))*zData[i+1,j+1]
                                     -deltaX[i]*(-1+( 1-xTilde ))*bx[i+1,j+1]
                                     -deltaY[j]*(-3+2*( 1-xTilde )+3*( 1-yTilde ))*by[i+1,j+1]
                                     +(-6*( 1-xTilde )+6*( 1-yTilde ))*zData[i,j+1]
@@ -83,27 +83,27 @@ function biCubicSpline(xData, yData, zData, N)
                                     -deltaX[i]*(-( 1-xTilde ))*bx[i,j]
                                     -deltaY[j]*(-2*( 1-xTilde )+3*( 1-yTilde ))by[i,j]
                                     )
-    d2zdx2_4(i,j,k,l,xTilde, yTilde) = 1/(deltaX[i]^2)*((-6+12*xTilde)*zData[i,j]
-                                    +deltaX[i]*(-4+6*xTilde)*bx[i,j]
-                                    +(6-12*xTilde)*zData[i+1,j]
-                                    +deltaX[i]*(-1+6*deltaX[i])*bx[i+1,j])
-    d2z1dxdy_4(i,j,k,l,xTilde, yTilde) = 1/(deltaX[i]*deltaY[j])*(
-                                    6*yTilde*( (zData[i,j]+zData[i+1,j+1]) - (zData[i+1,j]+zData[i,j+1]) )
-                                    +deltaX[i]*yTilde*( (bx[i,j]+bx[i+1,j]) - (bx[i,j+1]+bx[i+1,j+1]) )
-                                    +deltaY[j]*( (by[i+1,j]-by[i,j]) + 
-                                    2*yTilde*( (by[i,j]+by[i,j+1]) - (by[i+1,j]+by[i+1,j+1]) ) ) )
-    d2z1dy2_4(i,j,k,l,xTilde,yTilde) = 1/(deltaX[i]^2)*((-6+6*xTilde+6*yTilde)*zData[i,j]
-                                    +deltaX[i]*(-1+xTilde)*bx[i,j]
-                                    +deltaY[j]*(-3+2*xTilde+3*yTilde)*by[i,j]
-                                    +(-6*xTilde+6*yTilde)*zData[i+1,j]
-                                    +deltaX[i]*(xTilde)*bx[i+1,j]
-                                    +deltaY[j]*(-1-2*xTilde+3*yTilde)*by[i+1,j]
-                                    +(6-6*xTilde-6*yTilde)*zData[i,j+1]
-                                    +deltaX[i]*(1-xTilde)*bx[i,j+1]
-                                    +deltaY[j]*(-2+2*xTilde+3*yTilde)*by[i,j+1]
-                                    +(6*xTilde-6*yTilde)*zData[i+1,j+1]
-                                    +deltaX[i]*(-xTilde)*bx[i+1,j+1]
-                                    +deltaY[j]*(-2*xTilde+3*yTilde)by[i+1,j+1]
+    d2zdx2_4(i,j,k,l,xTilde, yTilde) = 1/(deltaY[j]^2)*((-6+12*( 1-yTilde ))*zData[i,j+1]
+                                    -deltaY[j]*(-4+6*( 1-yTilde ))*-bx[i,j+1]
+                                    +(6-12*( 1-yTilde ))*zData[i,j]
+                                    -deltaY[j]*(-1+6*-deltaY[j])*-bx[i,j])
+    d2z1dxdy_4(i,j,k,l,xTilde, yTilde) = -1/(deltaX[i]*deltaY[j])*(
+                                    6*xTilde*( (zData[i,j+1]+zData[i+1,j]) - (zData[i,j]+zData[i+1,j+1]) )
+                                    -deltaY[j]*xTilde*( (-bx[i,j+1]+-bx[i,j]) - (-bx[i+1,j+1]+-bx[i+1,j]) )
+                                    +deltaX[i]*( (by[i,j]-by[i,j+1]) + 
+                                    2*xTilde*( (by[i,j+1]+by[i+1,j+1]) - (by[i,j]+by[i+1,j]) ) ) )
+    d2z1dy2_4(i,j,k,l,xTilde,yTilde) = 1/(deltaX[i]^2)*((-6+6*( 1-yTilde )+6*xTilde)*zData[i,j+1]
+                                    -deltaY[j]*(-1+( 1-yTilde ))*-bx[i,j+1]
+                                    +deltaX[i]*(-3+2*( 1-yTilde )+3*xTilde)*by[i,j+1]
+                                    +(-6*( 1-yTilde )+6*xTilde)*zData[i,j]
+                                    -deltaY[j]*(( 1-yTilde ))*-bx[i,j]
+                                    +deltaX[i]*(-1-2*( 1-yTilde )+3*xTilde)*by[i,j]
+                                    +(6-6*( 1-yTilde )-6*xTilde)*zData[i+1,j+1]
+                                    -deltaY[j]*(1-( 1-yTilde ))*-bx[i+1,j+1]
+                                    +deltaX[i]*(-2+2*( 1-yTilde )+3*yTilde)*by[i+1,j+1]
+                                    +(6*( 1-yTilde )-6*xTilde)*zData[i+1,j]
+                                    -deltaY[j]*(-( 1-yTilde ))*-bx[i+1,j]
+                                    +deltaX[i]*(-2*( 1-yTilde )+3*xTilde)by[i+1,j]
                                     )
 
     z1(x,y,bx,by,i,j) =
