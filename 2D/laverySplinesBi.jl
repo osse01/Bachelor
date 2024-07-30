@@ -3,9 +3,9 @@ using JuMP, HiGHS
 model = Model(HiGHS.Optimizer)
 
 # set_attribute(model, "presolve", "on")
-# set_attribute(model, "solver", "ipm") # Interior Point Method
+ set_attribute(model, "solver", "ipm") # Interior Point Method
 
-function biCubicSpline(xData, yData, zData, N)
+function biCubicSpline(xData, yData, zData, N, lambda)
     I = length(xData)                               # length of xData
     J = length(yData)                               # length of yData
     deltaX = [xData[i+1]-xData[i] for i in 1:I-1]   # x-step length
@@ -23,7 +23,7 @@ function biCubicSpline(xData, yData, zData, N)
     d2z1dxdy_1(i,j,xTilde, yTilde) = 1/(deltaX[i]*deltaY[j])*(
                                     6*yTilde*( (zData[i,j]+zData[i+1,j+1]) - (zData[i+1,j]+zData[i,j+1]) )
                                     +deltaX[i]*yTilde*( (bx[i,j]+bx[i+1,j]) - (bx[i,j+1]+bx[i+1,j+1]) )
-                                    +deltaY[j]*( (by[i1,j]-by[i,j]) + 
+                                    +deltaY[j]*( (by[i+1,j]-by[i,j]) + 
                                     2*yTilde*( (by[i,j]+by[i,j+1]) - (by[i+1,j]+by[i+1,j+1]) ) ) )
     d2z1dy2_1(i,j,xTilde,yTilde) = 1/(deltaY[j]^2)*((-6+6*xTilde+6*yTilde)*zData[i,j]
                                     +deltaX[i]*(-1+xTilde)*bx[i,j]
@@ -40,7 +40,7 @@ function biCubicSpline(xData, yData, zData, N)
                                     )
 
     d2zdx2_2(i,j,xTilde, yTilde) = 1/(deltaY[i]^2)*((-6+12*yTilde)*zData[i+1,j]
-                                    +deltaY[i]*(-4+6*yTildeTilde)*by[i+1,j]
+                                    +deltaY[i]*(-4+6*yTilde)*by[i+1,j]
                                     +(6-12*yTilde)*zData[i+1,j+1]
                                     +deltaY[i]*(-1+6*deltaY[i])*by[i+1,j+1])
     d2z1dxdy_2(i,j,xTilde, yTilde) = 1/(deltaY[i]*-deltaX[j])*(
@@ -160,18 +160,23 @@ function biCubicSpline(xData, yData, zData, N)
     gamma_4(bx, by, i, j, k, l ) = 
         abs( d2zdx2_4(i,j, k/2N, l/2N ) ) + 2*abs( d2z1dxdy_4(i,j, k/2N, l/2N ) ) + abs( d2z1dy2_4(i,j, k/2N, l/2N ) )
     # N = 100 # The sample size in each small square is 4N^2
-    @objective(model, Min, sum( sum( 1/(N^2)(
-            sum( sum( gamma_1( bx[k,l],by[k,l],i,j,k,l )  
-                    + gamma_2( bx[k,l],by[k,l],i,j,k,l )  
-                    + gamma_3( bx[k,l],by[k,l],i,j,k,l )  
-                    + gamma_4( bx[k,l],by[k,l],i,j,k,l )  
+    # lambda is a small number
+    @objective(model, Min, sum( sum( 1/(N^2)*(
+            sum( sum( gamma_1( bx[i,j],by[i,j],i,j,k,l )  
+                    + gamma_2( bx[i,j],by[i,j],i,j,k,l )  
+                    + gamma_3( bx[i,j],by[i,j],i,j,k,l )  
+                    + gamma_4( bx[i,j],by[i,j],i,j,k,l )  
                 for l in 1:k) for k in 1:N)
-        +   sum( sum( gamma_1( bx[k,l],by[k,l],i,j,k,l ) 
-                    + gamma_2( bx[k,l],by[k,l],i,j,k,l ) 
-                    + gamma_3( bx[k,l],by[k,l],i,j,k,l ) 
-                    + gamma_4( bx[k,l],by[k,l],i,j,k,l )  
+        +   sum( sum( gamma_1( bx[i,j],by[i,j],i,j,k,l ) 
+                    + gamma_2( bx[i,j],by[i,j],i,j,k,l ) 
+                    + gamma_3( bx[i,j],by[i,j],i,j,k,l ) 
+                    + gamma_4( bx[i,j],by[i,j],i,j,k,l )  
                 for l in N:2*N-k) for k in N+1:2*N)
-        ) for j in 1:J) for i in 1:I)) + 
-        
+        ) for j in 1:J-1) for i in 1:I-1)) + 
+            lambda*sum(sum( abs(bx[i,j]) + abs(by[i,j]) for i in 1:I) for j in 1:J)
+    optimize!(model)
+    bx = vec(value.(bx))
+    by = vec(value.(by))
+
     return
 end
