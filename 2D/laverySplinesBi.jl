@@ -151,25 +151,25 @@ function biCubicSpline(xData, yData, zData, N)
         -deltaY[j] * (-0.5( 1-yTilde(y,j) )*xTilde(x,i)^2)* -by[i+1,j] + deltaX[i]*(-( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3)*bx[i+1,j]
 
 
-    gamma_1(bx, by, i, j ) = 
+    gamma_1(bx, by, i, j, k, l ) = 
         abs( d2zdx2_1(i,j, k/2N, l/2N ) ) + 2*abs( d2z1dxdy_1(i,j, k/2N, l/2N ) ) + abs( d2z1dy2_1(i,j, k/2N, l/2N ) )
-    gamma_2(bx, by, i, j ) = 
+    gamma_2(bx, by, i, j, k, l ) = 
         abs( d2zdx2_2(i,j, k/2N, l/2N ) ) + 2*abs( d2z1dxdy_2(i,j, k/2N, l/2N ) ) + abs( d2z1dy2_2(i,j, k/2N, l/2N ) )
-    gamma_3(bx, by, i, j ) = 
+    gamma_3(bx, by, i, j, k, l ) = 
         abs( d2zdx2_3(i,j, k/2N, l/2N ) ) + 2*abs( d2z1dxdy_3(i,j, k/2N, l/2N ) ) + abs( d2z1dy2_3(i,j, k/2N, l/2N ) )
-    gamma_4(bx, by, i, j ) = 
+    gamma_4(bx, by, i, j, k, l ) = 
         abs( d2zdx2_4(i,j, k/2N, l/2N ) ) + 2*abs( d2z1dxdy_4(i,j, k/2N, l/2N ) ) + abs( d2z1dy2_4(i,j, k/2N, l/2N ) )
     # N = 100 # The sample size in each small square is 4N^2
     @objective(model, Min, sum( sum( 1/(N^2)(
-            sum( sum( gamma_1( bx[k,l],by[k,l],i,j )  
-                    + gamma_2( bx[k,l],by[k,l],i,j )  
-                    + gamma_3( bx[k,l],by[k,l],i,j )  
-                    + gamma_4( bx[k,l],by[k,l],i,j )  
+            sum( sum( gamma_1( bx[k,l],by[k,l],i,j,k,l )  
+                    + gamma_2( bx[k,l],by[k,l],i,j,k,l )  
+                    + gamma_3( bx[k,l],by[k,l],i,j,k,l )  
+                    + gamma_4( bx[k,l],by[k,l],i,j,k,l )  
                 for l in 1:k) for k in 1:N)
-        +   sum( sum( gamma_1( bx[k,l],by[k,l],i,j ) 
-                    + gamma_2( bx[k,l],by[k,l],i,j ) 
-                    + gamma_3( bx[k,l],by[k,l],i,j ) 
-                    + gamma_4( bx[k,l],by[k,l],i,j )  
+        +   sum( sum( gamma_1( bx[k,l],by[k,l],i,j,k,l ) 
+                    + gamma_2( bx[k,l],by[k,l],i,j,k,l ) 
+                    + gamma_3( bx[k,l],by[k,l],i,j,k,l ) 
+                    + gamma_4( bx[k,l],by[k,l],i,j,k,l )  
                 for l in N:2*N-k) for k in N+1:2*N)
         ) for j in 1:J) for i in 1:I)) + 
         
