@@ -14,9 +14,9 @@ biCubicSpline(xdata, ydata, zdata, 20, 0.01)
 #gr()
 #p = plot(xdata, ydata, zdata, seriestype=:scatter, label="Data points")
 #plot!(xs, ys, label="Lavery spline")
-xaxis!("x")  # Set x-axis label
-yaxis!("y")  # Set y-axis label
-zaxis!("z")  # Set z-axis label
-title!("Points interpolated with Bi-variate Lavery Splines")
-display(p)
-savefig("3D_data.png")
+#xaxis!("x")  # Set x-axis label
+#yaxis!("y")  # Set y-axis label
+#zaxis!("z")  # Set z-axis label
+#title!("Points interpolated with Bi-variate Lavery Splines")
+#display(p)
+#savefig("3D_data.png")
