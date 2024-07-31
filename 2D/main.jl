@@ -2,9 +2,9 @@ using Plots
 include("laverySplinesBi.jl")
 include("testdata.jl")
 
-xdata = xdata_1
-ydata = ydata_1
-zdata = zdata_1
+xdata = xdata_2
+ydata = ydata_2
+zdata = zdata_2
 
 # len = 4;
 # xdata = [0,1,2,3,4,5,6]
@@ -30,9 +30,9 @@ z = evaluate(spline, N, M)
 # xdata = [0,1,2,3,4,5,6, 0,1,2,3,4,5,6, 0,1,2,3,4,5,6, 0,1,2,3,4,5,6, 0,1,2,3,4,5,6, 0,1,2,3,4,5,6, 0,1,2,3,4,5,6]
 # ydata = [0,0,0,0,0,0,0, 1,1,1,1,1,1,1, 2,2,2,2,2,2,2, 3,3,3,3,3,3,3, 4,4,4,4,4,4,4, 5,5,5,5,5,5,5, 6,6,6,6,6,6,6]
 # zdata = vec(zdata)
-xdata = xPlotData_1
-ydata = yPlotData_1
-zdata = zPlotData_1
+xdata = xPlotData_2
+ydata = yPlotData_2
+zdata = zPlotData_2
 
 # , quiver = (vec(bx), vec(by), ones(1,len))
 plot(x, y, z, seriestype=:surface, label="Lavery spline")
