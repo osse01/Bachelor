@@ -208,7 +208,7 @@ function evaluate(spline, N, M)
     deltaX = [xData[i+1]-xData[i] for i in 1:I-1]   # x-step length
     deltaY = [yData[j+1]-yData[j] for j in 1:J-1]   # y-step length
 
-    xTilde(x,i) = i<I ? (x - xData[i]) / deltaX[i] : (x - xData[i]) / deltaX[i-1]        # Transforms to unit cube
+    xTilde(x,i) = (x - xData[i]) / deltaX[i]        # Transforms to unit cube
     yTilde(y,j) = (y - yData[j]) / deltaY[j]        # Transforms to unit cube
 
     z1(x,y,bx,by,i,j) =
@@ -270,13 +270,13 @@ function evaluate(spline, N, M)
         j = 1
         l = 1
         for y in range(yData[1],yData[end],M)
-            if y <= x * gradient[i,j] && y <= xData[i+1] - x * gradient[i,j]
+            if y <= yData[j] + (x - xData[i]) * gradient[i,j] && y <= yData[j+1] - (x - xData[i]) * gradient[i,j]
                 z[k,l] = z1(x,y,bx,by,i,j)
-            elseif y >= x * gradient[i,j] && y <= xData[i+1] - x * gradient[i,j]
+            elseif y >= yData[j] + (x - xData[i]) * gradient[i,j] && y <= yData[j+1] - (x - xData[i]) * gradient[i,j]
                 z[k,l] = z4(x,y,bx,by,i,j)
-            elseif y >= xData[i+1] - x * gradient[i,j] && y >= x * gradient[i,j]
+            elseif y >= yData[j+1] - (x - xData[i]) * gradient[i,j] && y >= yData[j] + (x - xData[i]) * gradient[i,j]
                 z[k,l] = z3(x,y,bx,by,i,j)
-            elseif y <= x * gradient[i,j] && y >= xData[i+1] - x * gradient[i,j]
+            elseif y <= yData[j] + (x - xData[i]) * gradient[i,j] && y >= yData[j+1] - (x - xData[i]) * gradient[i,j]
                 z[k,l] = z2(x,y,bx,by,i,j)
             end
             l = l+1

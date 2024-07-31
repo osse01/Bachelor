@@ -22,10 +22,19 @@ xdata = [0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3]
 ydata = [0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3]
 zdata = vec(zdata)
 plot(x, y, z, seriestype=:surface, label="Lavery spline")
+p = plot!(xdata, ydata, zdata, seriestype=:scatter, label="Data points", camera=(0,90))
+xaxis!("x")  # Set x-axis label
+yaxis!("y")  # Set y-axis label
+zaxis!("z")  # Set z-axis label
+title!("Points interpolated with Bi-variate Lavery Splines")
+display(p)
+savefig("bi_lavery_top.png")
+
+plot(x, y, z, seriestype=:surface, label="Lavery spline")
 p = plot!(xdata, ydata, zdata, seriestype=:scatter, label="Data points")
 xaxis!("x")  # Set x-axis label
 yaxis!("y")  # Set y-axis label
 zaxis!("z")  # Set z-axis label
 title!("Points interpolated with Bi-variate Lavery Splines")
 display(p)
-savefig("bi_lavery.png")
+savefig("bi_lavery_angle.png")
