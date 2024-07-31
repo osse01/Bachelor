@@ -208,8 +208,8 @@ function evaluate(spline, N, M)
     deltaX = [xData[i+1]-xData[i] for i in 1:I-1]   # x-step length
     deltaY = [yData[j+1]-yData[j] for j in 1:J-1]   # y-step length
 
-    xTilde(x,i) = (x - xData[i]) / deltaX[i]        # Transforms [x_i,x_i+1] to [0,1]
-    yTilde(y,j) = (y - yData[j]) / deltaY[j]        # Transforms [y_i,y_i+1] to [0,1]
+    xTilde(x,i) = (x - xData[i]) / deltaX[i]        # Transforms x in [x_i,x_i+1] to xTilde in [0,1] 
+    yTilde(y,j) = (y - yData[j]) / deltaY[j]        # Transforms y in [y_i,y_i+1] to yTilde in [0,1]
 
     z1(x,y,bx,by,i,j) =
         (1 - 3*xTilde(x,i)^2 + 2*xTilde(x,i)^3 - 3*yTilde(y,j)^2 + 3*xTilde(x,i)*yTilde(y,j)^2 + yTilde(y,j)^3)*zData[i,j] +
