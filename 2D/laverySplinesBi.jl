@@ -127,7 +127,8 @@ function biCubicSpline(xData, yData, zData, N, lambda)
         abs_d2zdx2_3[i,j, k, l ] + 2*abs_d2z1dxdy_3[i,j, k, l ] + abs_d2z1dy2_3[i,j, k, l ]
     gamma_4(i, j, k, l ) = 
         abs_d2zdx2_4[i,j, k, l ] + 2*abs_d2z1dxdy_4[i,j, k, l ] + abs_d2z1dy2_4[i,j, k, l ]
-    # N = 100 # The sample size in each small square is 4N^2
+    
+        # The sample size in each small square is 4N^2
     # lambda is a small number
     @objective(model, Min, sum( sum( 1/(N^2)*(
             sum( sum( abs_d2zdx2_1[i,j, k, l ] + 2*abs_d2z1dxdy_1[i,j, k, l ] + abs_d2z1dy2_1[i,j, k, l ]  
