@@ -210,7 +210,7 @@ function evaluate(spline, N, M)
     zData = spline.zData
     bx = spline.bx
     by = spline.by
-    
+
     I = length(xData)                               # length of xData
     J = length(yData)                               # length of yData
     deltaX = [xData[i+1]-xData[i] for i in 1:I-1]   # x-step length
@@ -264,7 +264,7 @@ function evaluate(spline, N, M)
         +deltaY[j] * (-0.5*( 1-yTilde(y,j) )*xTilde(x,i)^2)* -by[i+1,j] + deltaX[i]*(-( 1-yTilde(y,j) )*xTilde(x,i)^2 + 0.5*xTilde(x,i)^3)*bx[i+1,j]
 
     #gradient = Array([[deltaY[j]/deltaX[i] for i in 1:I-1] for j in 1:J-1])
-    gradient = zeros(I, J)
+    slope = zeros(I, J)
     for i in 1:I-1
         for j in 1:J-1
             slope[i,j] = deltaY[j]/deltaX[i]
