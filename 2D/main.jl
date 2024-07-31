@@ -1,6 +1,7 @@
 using Plots
 include("laverySplinesBi.jl")
 include("testData.jl")
+include("plotData.jl")
 
 xdata = xdata_2
 ydata = ydata_2
@@ -22,6 +23,7 @@ zdata = zPlotData_2
 
 plot(x, y, z, seriestype=:surface, label="Lavery spline")
 plot!(xdata, ydata, zdata, seriestype=:scatter, label="data points", camera=(0,90))
+plot!(xdata, ydata, zdata, label="data points", camera=(0,90))
 xaxis!("x")  # Set x-axis label
 yaxis!("y")  # Set y-axis label
 zaxis!("z")  # Set z-axis label
