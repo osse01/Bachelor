@@ -1,5 +1,12 @@
 
 using JuMP, HiGHS
+struct Data 
+    xData::Vector
+    yData::Vector
+    zData::Array
+    bx::Array
+    by::Array
+end
 model = Model(HiGHS.Optimizer)
 
  set_attribute(model, "presolve", "on")
@@ -194,15 +201,16 @@ function biCubicSpline(xData, yData, zData, N, lambda)
     print(bx)
     print(by)
     print("\n")
-    return [xdata, ydata, zdata, bx, by]
+    return Data(xData,yData,zData,bx,by)
 end
 
 function evaluate(spline, N, M)
-    xData = spline[1]
-    yData = spline[2]
-    zData = spline[3]
-    bx = spline[4]
-    by = spline[5]
+    xData = spline.xData
+    yData = spline.yData
+    zData = spline.zData
+    bx = spline.bx
+    by = spline.by
+    
     I = length(xData)                               # length of xData
     J = length(yData)                               # length of yData
     deltaX = [xData[i+1]-xData[i] for i in 1:I-1]   # x-step length
@@ -259,7 +267,7 @@ function evaluate(spline, N, M)
     gradient = zeros(I, J)
     for i in 1:I-1
         for j in 1:J-1
-            gradient[i,j] = deltaY[j]/deltaX[i]
+            slope[i,j] = deltaY[j]/deltaX[i]
         end
     end
     
@@ -269,25 +277,27 @@ function evaluate(spline, N, M)
     for x in range(xData[1],xData[end],N)
         j = 1
         l = 1
-        for y in range(yData[1],yData[end],M)
-            if y <= yData[j] + (x - xData[i]) * gradient[i,j] && y <= yData[j+1] - (x - xData[i]) * gradient[i,j]
-                z[k,l] = z1(x,y,bx,by,i,j)
-            elseif y >= yData[j] + (x - xData[i]) * gradient[i,j] && y <= yData[j+1] - (x - xData[i]) * gradient[i,j]
-                z[k,l] = z4(x,y,bx,by,i,j)
-            elseif y >= yData[j+1] - (x - xData[i]) * gradient[i,j] && y >= yData[j] + (x - xData[i]) * gradient[i,j]
-                z[k,l] = z3(x,y,bx,by,i,j)
-            elseif y <= yData[j] + (x - xData[i]) * gradient[i,j] && y >= yData[j+1] - (x - xData[i]) * gradient[i,j]
-                z[k,l] = z2(x,y,bx,by,i,j)
-            end
-            l = l+1
-            if y > yData[j+1]
-                j = j+1
-            end
-        end
-        k = k+1
         if x > xData[i+1]
             i = i+1
         end
+        for y in range(yData[1],yData[end],M)
+            if y > yData[j+1]
+                j = j+1
+            end
+
+            if     y <= yData[j] + (x - xData[i]) * slope[i,j] && y <= yData[j+1] - (x - xData[i]) * slope[i,j]
+                z[k,l] = z1(x,y,bx,by,i,j)
+            elseif y <= yData[j] + (x - xData[i]) * slope[i,j] && y >= yData[j+1] - (x - xData[i]) * slope[i,j]
+                z[k,l] = z2(x,y,bx,by,i,j)
+            elseif y >= yData[j] + (x - xData[i]) * slope[i,j] && y >= yData[j+1] - (x - xData[i]) * slope[i,j]
+                z[k,l] = z3(x,y,bx,by,i,j)
+            elseif y >= yData[j] + (x - xData[i]) * slope[i,j] && y <= yData[j+1] - (x - xData[i]) * slope[i,j]
+                z[k,l] = z4(x,y,bx,by,i,j)
+            end
+            l = l+1
+            
+        end
+        k = k+1
     end
     return z
 end

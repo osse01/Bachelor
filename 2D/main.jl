@@ -1,6 +1,6 @@
 using Plots
 include("laverySplinesBi.jl")
-include("testdata.jl")
+include("testData.jl")
 
 xdata = xdata_2
 ydata = ydata_2
