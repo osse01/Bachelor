@@ -267,7 +267,7 @@ function evaluate(spline, N, M)
     gradient = zeros(I, J)
     for i in 1:I-1
         for j in 1:J-1
-            gradient[i,j] = deltaY[j]/deltaX[i]
+            slope[i,j] = deltaY[j]/deltaX[i]
         end
     end
     
@@ -277,25 +277,27 @@ function evaluate(spline, N, M)
     for x in range(xData[1],xData[end],N)
         j = 1
         l = 1
-        for y in range(yData[1],yData[end],M)
-            if     y <= yData[j] + (x - xData[i]) * gradient[i,j] && y <= yData[j+1] - (x - xData[i]) * gradient[i,j]
-                z[k,l] = z1(x,y,bx,by,i,j)
-            elseif y <= yData[j] + (x - xData[i]) * gradient[i,j] && y >= yData[j+1] - (x - xData[i]) * gradient[i,j]
-                z[k,l] = z2(x,y,bx,by,i,j)
-            elseif y >= yData[j] + (x - xData[i]) * gradient[i,j] && y >= yData[j+1] - (x - xData[i]) * gradient[i,j]
-                z[k,l] = z3(x,y,bx,by,i,j)
-            elseif y >= yData[j] + (x - xData[i]) * gradient[i,j] && y <= yData[j+1] - (x - xData[i]) * gradient[i,j]
-                z[k,l] = z4(x,y,bx,by,i,j)
-            end
-            l = l+1
-            if y > yData[j+1]
-                j = j+1
-            end
-        end
-        k = k+1
         if x > xData[i+1]
             i = i+1
         end
+        for y in range(yData[1],yData[end],M)
+            if y > yData[j+1]
+                j = j+1
+            end
+
+            if     y <= yData[j] + (x - xData[i]) * slope[i,j] && y <= yData[j+1] - (x - xData[i]) * slope[i,j]
+                z[k,l] = z1(x,y,bx,by,i,j)
+            elseif y <= yData[j] + (x - xData[i]) * slope[i,j] && y >= yData[j+1] - (x - xData[i]) * slope[i,j]
+                z[k,l] = z2(x,y,bx,by,i,j)
+            elseif y >= yData[j] + (x - xData[i]) * slope[i,j] && y >= yData[j+1] - (x - xData[i]) * slope[i,j]
+                z[k,l] = z3(x,y,bx,by,i,j)
+            elseif y >= yData[j] + (x - xData[i]) * slope[i,j] && y <= yData[j+1] - (x - xData[i]) * slope[i,j]
+                z[k,l] = z4(x,y,bx,by,i,j)
+            end
+            l = l+1
+            
+        end
+        k = k+1
     end
     return z
 end
