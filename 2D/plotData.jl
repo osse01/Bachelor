@@ -20,7 +20,10 @@ function plot3D(xdata,ydata,zdata,z; show_data=true, camera_angle=(30,30), save_
         anim = Animation()
         for i in 0:359
             g = plot(x, y, z, seriestype=:surface, label="Lavery spline",camera=(i,30))
-            frame(anim,g)
+            if show_data
+                g = plot!(x_scatter_data, y_scatter_data, z_scatter_data, seriestype=:scatter, label="data points",camera=(i,30))
+            end
+            frame(anim,g) 
         end
         gif(anim,"spline.gif",fps=30)
     end
