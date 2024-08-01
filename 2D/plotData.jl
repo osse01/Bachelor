@@ -1,15 +1,12 @@
 
 
 # Create the plot
-function plot3D(xdata,ydata,zdata,z, show_data=true)
-    N = 100
-    M = N
-    x = range(xdata[1], xdata[end], N)
-    y = range(ydata[1], ydata[end], M)
+function plot3D(xdata,ydata,zdata,z; show_data=true, camera_angle=(30,30), save_gif=false)
+
     x_scatter_data = repeat(xdata,length(ydata))
     y_scatter_data = repeat(ydata,inner=length(xdata))
     z_scatter_data = vec(zdata')
-    p = plot(x, y, z, seriestype=:surface, label="Lavery spline")
+    p = plot(x, y, z, seriestype=:surface, label="Lavery spline",camera=camera_angle)
     if show_data
         p = plot!(x_scatter_data, y_scatter_data, z_scatter_data, seriestype=:scatter, label="data points")
     end
@@ -17,6 +14,16 @@ function plot3D(xdata,ydata,zdata,z, show_data=true)
     yaxis!("y")  # Set y-axis label
     zaxis!("z")  # Set z-axis label
     title!("Points interpolated with Bi-variate Lavery Splines")
+
+    if save_gif
+        gr()
+        anim = Animation()
+        for i in 0:359
+            g = plot(x, y, z, seriestype=:surface, label="Lavery spline",camera=(i,30))
+            frame(anim,g)
+        end
+        gif(anim,"spline.gif",fps=30)
+    end
     return p
 end
 
