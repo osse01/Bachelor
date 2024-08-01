@@ -11,6 +11,8 @@ model = Model(HiGHS.Optimizer)
 
  set_attribute(model, "presolve", "on")
  set_attribute(model, "solver", "ipm") # Interior Point Method
+ #set_attribute(model,"log_to_console", false)
+ set_attribute(model, "log_file", "Highs.log")
 
 function biCubicSpline(xData, yData, zData, N, lambda)
     I = length(xData)                               # length of xData
@@ -135,7 +137,7 @@ function biCubicSpline(xData, yData, zData, N, lambda)
     gamma_4(i, j, k, l ) = 
         abs_d2zdx2_4[i,j, k, l ] + 2*abs_d2z1dxdy_4[i,j, k, l ] + abs_d2z1dy2_4[i,j, k, l ]
     
-        # The sample size in each small square is 4N^2
+    # The sample size in each small square is 4N^2
     # lambda is a small number
     @objective(model, Min, sum( sum( 1/(N^2)*(
             sum( sum( abs_d2zdx2_1[i,j, k, l ] + 2*abs_d2z1dxdy_1[i,j, k, l ] + abs_d2z1dy2_1[i,j, k, l ]  
