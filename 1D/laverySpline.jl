@@ -2,8 +2,11 @@
 using JuMP, HiGHS
 model = Model(HiGHS.Optimizer)
 
+set_attribute(model, "presolve", "on")
+set_attribute(model, "solver", "ipm") # Interior Point Method
+
 # Calculates the Lavery Splines of xdata and zdata
-function laverySpline(xData,zData, intervall)
+function laverySpline(xData::AbstractVector,zData::AbstractVector, intervall::AbstractVector)
     len = length(xData)
     h(i) = xData[i+1]-xData[i]
     deltaZ(i) = (zData[i+1]-zData[i]) / h(i)
