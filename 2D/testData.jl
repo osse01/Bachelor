@@ -1,4 +1,4 @@
-
+include("read_from_txt.jl")
 
 xdata_1 = [0,1,2,3,4,5,6]
 ydata_1 = [0,1,2,3,4,5,6]
@@ -46,3 +46,9 @@ zdata_4 = [1 1 1 0 0 4 4 4 4 1;
 xdata_5 = [0,1,2,3,4,5,6]
 ydata_5 = [0,1,2,3,4,5,6]
 zdata_5 = repeat(sin.(xdata_5.*2pi./3),inner=(1,7))
+# ----------------------------------------------------------------
+data = read_values_from_file("rhine_data_2d_20.txt")
+xdata_6 = data.x
+ydata_6 = data.y
+zdata_6 = data.z
+print(zdata_6)
