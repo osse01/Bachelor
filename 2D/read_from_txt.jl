@@ -33,9 +33,6 @@ function read_values_from_file(file_path::AbstractString)
         x_vals = values[1:n]
         y_vals = values[n+1:n+m]
         z_vals = values[n+1+m:end]
-        print(length(x_vals))
-        print(length(y_vals))
-        print(length(z_vals))
 
         z_array = reshape(z_vals,n,m)
 
