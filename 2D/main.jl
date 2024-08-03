@@ -7,28 +7,30 @@ include("testData.jl")
 include("plotData.jl")
 
 
-xdata = xdata_2
-ydata = ydata_2
-zdata = zdata_2
+xdata = xdata_6
+ydata = ydata_6
+zdata = zdata_6
 lenX = length(xdata)
 lenY = length(ydata)
 
 
-#bx = readdlm("bx_data_4.csv", ',', Float64)
-#by = readdlm("by_data_4.csv", ',', Float64)
+bx = Array(readdlm("bx_data_6.csv", ',', Float64))
+by = Array(readdlm("by_data_6.csv", ',', Float64))
+
 #bx = zeros(lenX,lenY)
 #by = zeros(lenX,lenY)
-#spline = Data(xdata, ydata, zdata, bx, by)
-spline = biCubicSpline(xdata, ydata, zdata, 20, 0.0001)
+spline = Data(xdata, ydata, zdata, bx, by)
+print("\nStart Interpolating...\n")
+#spline = biCubicSpline(xdata, ydata, zdata, 5, 0.0001)
 
-file = open("bx_data.csv", "w")
-writedlm(file, spline.bx, ',')
-close(file)
-file = open("by_data.csv", "w")
-writedlm(file, spline.by,',')
-close(file)
+# file = open("bx_data.csv", "w")
+# writedlm(file, spline.bx, ',')
+# close(file)
+# file = open("by_data.csv", "w")
+# writedlm(file, spline.by,',')
+# close(file)
 
-N = 100
+N = 1000
 M = N
 x = range(xdata[1], xdata[end], N)
 y = range(ydata[1], ydata[end], M)

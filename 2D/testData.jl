@@ -51,4 +51,3 @@ data = read_values_from_file("rhine_data_2d_20.txt")
 xdata_6 = data.x
 ydata_6 = data.y
 zdata_6 = data.z
-print(zdata_6)
