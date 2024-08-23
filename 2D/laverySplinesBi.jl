@@ -7,13 +7,16 @@ struct Data
     bx::Array
     by::Array
 end
+# Gurobi solver
 model = Model(HiGHS.Optimizer)
-
  set_attribute(model, "presolve", "on")
  set_attribute(model, "solver", "ipm") # Interior Point Method
+ set_attribute(model, "parallel", "on")
+ set_attribute(model, "ipm_optimality_tolerance", 1e-4)
  #set_attribute(model, "solver", "simplex") # Simplex Solver
  #set_attribute(model,"log_to_console", false)
  set_attribute(model, "log_file", "Highs.log")
+ set_attribute(model, "log_dev_level", 1) # 0=none, 1=info, 2=all
 
 function biCubicSpline(xData, yData, zData, N, lambda)
     print("Inside biCubicSpline()\n")
@@ -240,7 +243,7 @@ function biCubicSpline(xData, yData, zData, N, lambda)
     print(bx)
     print(by)
     print("\n")
-    return Data(xData,yData,zData,bx,by)
+    return Data(xData,yData,zData,bx,by), model
 end
 
 function evaluate(spline, N, M)
@@ -279,17 +282,6 @@ function evaluate(spline, N, M)
         (3*( 1-xTilde(x,i) )^2 - 3*yTilde(y,j) * ( 1-xTilde(x,i) )^2 - ( 1-xTilde(x,i) )^3)*zData[i,j] + deltaY[j]*(0.5*( 1-xTilde(x,i) )^2-0.5*yTilde(y,j)*( 1-xTilde(x,i) )^2)*by[i,j] +
         deltaX[i] * (-( 1-xTilde(x,i) )^2 + yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3)*-bx[i,j] + (3*yTilde(y,j)*( 1-xTilde(x,i) )^2 - ( 1-xTilde(x,i) )^3)*zData[i,j+1] +
         deltaY[j] * (-0.5*yTilde(y,j)*( 1-xTilde(x,i) )^2)* by[i,j+1] + deltaX[i]*(-yTilde(y,j)*( 1-xTilde(x,i) )^2 + 0.5*( 1-xTilde(x,i) )^3)*-bx[i,j+1]
-    
-    #z3__old(x,y,bx,by,i,j) =
-    #    (1 - 3*( 1-xTilde(x,i) )^2 + 2*( 1-xTilde(x,i) )^3 - 3*( 1-yTilde(y,j) )^2 + 3*( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + ( 1-yTilde(y,j) )^3)*zData[i+1,j+1] +
-    #    deltaX[i] * (( 1-xTilde(x,i) ) - 2*( 1-xTilde(x,i) )^2 + ( 1-xTilde(x,i) )^3 - 0.5*( 1-yTilde(y,j) )^2 + 0.5 * ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2) * -bx[i+1,j+1] + 
-    #    deltaY[j] * (( 1-yTilde(y,j) ) - ( 1-xTilde(x,i) )*( 1-yTilde(y,j) ) - 1.5 * ( 1-yTilde(y,j) )^2 + ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3) * -by[i+1,j+1] +
-    #    (3*( 1-xTilde(x,i) )^2 - 2*( 1-xTilde(x,i) )^3 - 3*( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + ( 1-yTilde(y,j) )^3) * zData[i,j+1] +
-    #    deltaX[i] * (-( 1-xTilde(x,i) )^2 + ( 1-xTilde(x,i) )^3 + 0.5*( 1-xTilde(x,i) )* ( 1-yTilde(y,j) )^2) * -bx[i,j+1] +
-    #    deltaY[j] * (( 1-xTilde(x,i) ) * ( 1-yTilde(y,j) ) - 0.5*( 1-yTilde(y,j) )^2 - ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3) * -by[i,j+1] +
-    #    (3*( 1-yTilde(y,j) )^2 - 3*( 1-xTilde(x,i) ) * ( 1-yTilde(y,j) )^2 - ( 1-yTilde(y,j) )^3)*zData[i+1,j] +deltaX[i]*(0.5*( 1-yTilde(y,j) )^2-0.5*( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2)*-bx[i+1,j] +
-    #    deltaY[j] * (-( 1-yTilde(y,j) )^2 + ( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3)*-by[i+1,j] + (3*( 1-xTilde(x,i) )*( -yTilde(y,j) )^2 - ( 1-yTilde(y,j) )^3)*zData[i,j] +
-    #    deltaX[i] * (-0.5*( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2)* -bx[i,j] + deltaY[j]*(-( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + 0.5*( 1-yTilde(y,j) )^3)*-by[i,j]
     
     z3(x,y,bx,by,i,j) =
         (1 - 3*( 1-xTilde(x,i) )^2 + 2*( 1-xTilde(x,i) )^3 - 3*( 1-yTilde(y,j) )^2 + 3*( 1-xTilde(x,i) )*( 1-yTilde(y,j) )^2 + ( 1-yTilde(y,j) )^3)*zData[i+1,j+1] +
