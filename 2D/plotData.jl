@@ -1,7 +1,7 @@
 
 
 # Create the plot
-function plot3D(xdata,ydata,zdata,z; show_data=true, camera_angle=(30,30), title::AbstractString="Beautiful Plots!")
+function plot3D(xdata,ydata,zdata,x,y,z; show_data=true, camera_angle=(30,30), title::AbstractString="Beautiful Plots!")
     if show_data
         x_scatter_data = repeat(xdata,length(ydata))
         y_scatter_data = repeat(ydata,inner=length(xdata))

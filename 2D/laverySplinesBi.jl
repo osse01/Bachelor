@@ -1,5 +1,5 @@
 
-using JuMP, HiGHS
+using JuMP, HiGHS, Gurobi
 struct Data 
     xData::Vector
     yData::Vector
@@ -7,19 +7,20 @@ struct Data
     bx::Array
     by::Array
 end
-# Gurobi solver
-model = Model(HiGHS.Optimizer)
- set_attribute(model, "presolve", "on")
- set_attribute(model, "solver", "ipm") # Interior Point Method
- set_attribute(model, "parallel", "on")
- set_attribute(model, "ipm_optimality_tolerance", 1e-4)
- #set_attribute(model, "solver", "simplex") # Simplex Solver
- #set_attribute(model,"log_to_console", false)
- set_attribute(model, "log_file", "Highs.log")
- set_attribute(model, "log_dev_level", 1) # 0=none, 1=info, 2=all
+
+model = Model(HiGHS.Optimizer) # HiHGS solver
+#model = Model(Gurobi.Optimizer) # Gurobi solver
+
+#set_attribute(model, "presolve", "on")
+set_attribute(model, "solver", "ipm") # Interior Point Method
+set_attribute(model, "parallel", "on")
+set_attribute(model, "ipm_optimality_tolerance", 1e-4)
+ # set_attribute(model, "solver", "simplex") # Simplex Solver
+ # set_attribute(model,"log_to_console", false)
+set_attribute(model, "log_file", "Highs.log")
+ # set_attribute(model, "log_dev_level", 1) # 0=none, 1=info, 2=all
 
 function biCubicSpline(xData, yData, zData, N, lambda)
-    print("Inside biCubicSpline()\n")
     I = length(xData)                               # length of xData
     J = length(yData)                               # length of yData
     deltaX = [xData[i+1]-xData[i] for i in 1:I-1]   # x-step length

@@ -7,9 +7,9 @@ include("testData.jl")
 include("plotData.jl")
 
 
-xdata = xdata_6
-ydata = ydata_6
-zdata = zdata_6
+xdata = xdata_7
+ydata = ydata_7
+zdata = zdata_7
 lenX = length(xdata)
 lenY = length(ydata)
 
@@ -21,18 +21,19 @@ lenY = length(ydata)
 #by = zeros(lenX,lenY)
 #spline = Data(xdata, ydata, zdata, bx, by)
 print("\nStart Interpolating...\n")
-spline, model = biCubicSpline(xdata, ydata, zdata, 10, 0.001)
+spline, model = biCubicSpline(xdata, ydata, zdata, 1, 0)
 
 #print(model)
 #file = open("modelOutput", "w")
 #write(file, model)
 #close(file)
 
+# Saving derivatives to file
 print("Print bx. by to file...\n")
-file = open("bx_data_6.csv", "w")
+file = open("bx_data_7.csv", "w")
 writedlm(file, spline.bx, ',')
 close(file)
-file = open("by_data_6.csv", "w")
+file = open("by_data_7.csv", "w")
 writedlm(file, spline.by,',')
 close(file)
 
@@ -42,11 +43,11 @@ x = range(xdata[1], xdata[end], N)
 y = range(ydata[1], ydata[end], M)
 z = evaluate(spline, N, M)
 print("Plotting...\n")
-p = plot3D(xdata, ydata, zdata,z,show_data=false,title="Lavery Splines")
+p = plot3D(xdata, ydata, zdata,x,y,z,show_data=false,title="Lavery Splines")
 savefig(p,"geo_Lavery.png")
 
-#anim = saveGIF(xdata, ydata, zdata,z,show_data=false,title="Lavery Splines")
-#gif(anim,"geo.gif",fps=30)
+anim = saveGIF(xdata, ydata, zdata,z,show_data=false,title="Lavery Splines")
+gif(anim,"geo_Lavery.gif",fps=30)
 
 #BiCubic
 spline = BicubicInterpolator(xdata, ydata, zdata)
@@ -54,12 +55,12 @@ xs = range(xdata[1], xdata[end], N)
 ys = range(ydata[1], ydata[end], M)
 z_cubic = [spline(x, y) for x in xs, y in ys]
 print(size(z))
-p = plot3D(xdata, ydata, zdata,z_cubic,show_data=false, title="Bi-Cubic Splines")
+p = plot3D(xdata, ydata, zdata,x,y,z_cubic,show_data=false, title="Bi-Cubic Splines")
 savefig(p,"geo_Bicubic.png")
 
-p = plot3D(xdata, ydata, zdata,z_cubic-z,show_data=false, title="Diffrence in Splines")
+p = plot3D(xdata, ydata, zdata,x,y,z_cubic-z,show_data=false, title="Diffrence in Splines")
 savefig(p,"geo_diff.png")
 
-#anim = saveGIF(xdata, ydata, zdata,z,show_data=false,title="Cubic Splines")
-#gif(anim,"geo_Bicubic.gif",fps=30)
+anim = saveGIF(xdata, ydata, zdata,z,show_data=false,title="Cubic Splines")
+gif(anim,"geo_Bicubic.gif",fps=30)
 

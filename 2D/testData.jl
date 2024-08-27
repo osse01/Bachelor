@@ -50,4 +50,9 @@ zdata_5 = repeat(sin.(xdata_5.*2pi./3),inner=(1,7))
 data = read_values_from_file("rhine_data_2d_20.txt")
 xdata_6 = data.x
 ydata_6 = reverse(data.y)
-zdata_6 = data.z
+zdata_6 = reverse(data.z, dims=1)
+# ----------------------------------------------------------------
+data = read_values_from_file("seaside_oregon.txt")
+xdata_7 = data.x
+ydata_7 = data.y
+zdata_7 = data.z
