@@ -34,7 +34,7 @@ function read_values_from_file(file_path::AbstractString)
         y_vals = values[n+1:n+m]
         z_vals = values[n+1+m:end]
 
-        z_array = reshape(z_vals,n,m)'
+        z_array = reshape(z_vals,n,m)
         data = txtData(x_vals,y_vals,z_array)
 
         # Return the fdata
