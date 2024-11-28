@@ -1,7 +1,8 @@
 
 This is the Julia code for a bachelor thesis in applied mathematics by Logan Eriksson and Oscar Jemsson. 
 The title for the thesis is "Uni -and bivariate interpolation of
-multiscale data using cubic L1 splines".
+multiscale data using cubic L1 splines". 
+The report can be found here: https://drive.google.com/file/d/1tHe6zsK7AkZgpgLHChi7jOSboaDOuAxr/view?usp=drive_link
 
 L1 splines are an interpolation method that minimizes the 1-norm of the second derivative throughout all interpolation points.
 
